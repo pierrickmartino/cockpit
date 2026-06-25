@@ -15,6 +15,7 @@ vi.mock('@/repositories/factory', () => ({
 const { POST: postActor } = await import('@/app/api/themes/[id]/actors/route')
 const { POST: postFlow } = await import('@/app/api/themes/[id]/flows/route')
 const { GET: getStructure } = await import('@/app/api/themes/[id]/structure/route')
+const { POST: postReview } = await import('@/app/api/themes/[id]/review/route')
 
 function routeContext(): { params: Promise<{ id: string }> } {
   return { params: Promise.resolve({ id: THEME_ID }) }
@@ -98,6 +99,36 @@ describe('POST /api/themes/[id]/flows (authoring route)', () => {
 
     expect(response.status).toBe(201)
     expect(body.data.substitutability).toBe(0.3)
+  })
+})
+
+describe('POST /api/themes/[id]/review (accept-gate route)', () => {
+  it('denies a public principal with a 401', async () => {
+    const response = await postReview(
+      request('POST', { actions: [{ target: 'actor', id: randomUUID(), decision: 'accept' }] }),
+      routeContext(),
+    )
+
+    expect(response.status).toBe(401)
+  })
+
+  it('allows an admin principal to accept a proposed actor (200)', async () => {
+    const actor = await repository.addActor({
+      themeId: THEME_ID,
+      name: 'Reviewable',
+      kind: 'point',
+      actorKey: 'REV',
+    })
+
+    const response = await postReview(
+      request('POST', { actions: [{ target: 'actor', id: actor.id, decision: 'accept' }] }, ADMIN_TOKEN),
+      routeContext(),
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.success).toBe(true)
+    expect(body.data.actors.find((a: { id: string }) => a.id === actor.id).status).toBe('accepted')
   })
 })
 

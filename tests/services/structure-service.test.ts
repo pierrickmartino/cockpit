@@ -1,7 +1,12 @@
 import { randomUUID } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import { InMemoryStructureRepository } from '@/repositories/in-memory-structure-repository'
-import { addActor, addFlow, getWorkingStructure } from '@/services/structure-service'
+import {
+  addActor,
+  addFlow,
+  getWorkingStructure,
+  reviewStructure,
+} from '@/services/structure-service'
 
 const THEME_ID = randomUUID()
 
@@ -153,5 +158,82 @@ describe('getWorkingStructure', () => {
 
     expect(result.status).toBe(200)
     expect(result.body.data).toEqual({ actors: [], flows: [] })
+  })
+})
+
+describe('reviewStructure', () => {
+  it('accepts a proposed actor and returns the updated working structure', async () => {
+    const repo = new InMemoryStructureRepository()
+    const actor = await seedActor(repo, 'TSMC')
+
+    const result = await reviewStructure(repo, THEME_ID, {
+      actions: [{ target: 'actor', id: actor.id, decision: 'accept' }],
+    })
+
+    expect(result.status).toBe(200)
+    expect(result.body.data?.actors[0].status).toBe('accepted')
+    const [persisted] = await repo.listActors(THEME_ID)
+    expect(persisted.status).toBe('accepted')
+  })
+
+  it('applies a mixed accept/reject batch and persists every decision', async () => {
+    const repo = new InMemoryStructureRepository()
+    const keep = await seedActor(repo, 'TSMC')
+    const drop = await seedActor(repo, 'Generic')
+    const flow = await repo.addFlow({
+      themeId: THEME_ID,
+      fromActorId: keep.id,
+      toActorId: drop.id,
+      substitutability: 0.5,
+    })
+
+    const result = await reviewStructure(repo, THEME_ID, {
+      actions: [
+        { target: 'actor', id: keep.id, decision: 'accept' },
+        { target: 'actor', id: drop.id, decision: 'reject' },
+        { target: 'flow', id: flow.id, decision: 'reject' },
+      ],
+    })
+
+    expect(result.status).toBe(200)
+    const actors = await repo.listActors(THEME_ID)
+    expect(actors.find((a) => a.id === keep.id)?.status).toBe('accepted')
+    expect(actors.find((a) => a.id === drop.id)?.status).toBe('rejected')
+    expect((await repo.listFlows(THEME_ID))[0].status).toBe('rejected')
+  })
+
+  it('rejects malformed input with a 400 and persists nothing', async () => {
+    const repo = new InMemoryStructureRepository()
+    const actor = await seedActor(repo, 'TSMC')
+
+    const result = await reviewStructure(repo, THEME_ID, {
+      actions: [{ target: 'actor', id: actor.id, decision: 'maybe' }],
+    })
+
+    expect(result.status).toBe(400)
+    expect(result.body.success).toBe(false)
+    expect((await repo.listActors(THEME_ID))[0].status).toBe('proposed')
+  })
+
+  it('rejects an empty action batch with a 400', async () => {
+    const repo = new InMemoryStructureRepository()
+
+    const result = await reviewStructure(repo, THEME_ID, { actions: [] })
+
+    expect(result.status).toBe(400)
+    expect(result.body.success).toBe(false)
+  })
+
+  it('rejects an action targeting an element outside the theme and persists nothing', async () => {
+    const repo = new InMemoryStructureRepository()
+    const actor = await seedActor(repo, 'TSMC')
+
+    const result = await reviewStructure(repo, THEME_ID, {
+      actions: [{ target: 'actor', id: randomUUID(), decision: 'accept' }],
+    })
+
+    expect(result.status).toBe(400)
+    expect(result.body.success).toBe(false)
+    expect((await repo.listActors(THEME_ID))[0].status).toBe('proposed')
   })
 })

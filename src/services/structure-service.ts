@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { fail, ok } from '@/api/response'
+import { applyReview, type ReviewAction } from '@/domain/accept-gate'
 import type { Actor } from '@/domain/actor'
 import type { Flow } from '@/domain/flow'
 import type { WorkingStructure } from '@/domain/structure'
@@ -43,6 +44,19 @@ export const addFlowSchema = z
     message: 'A flow must connect two different actors',
     path: ['toActorId'],
   })
+
+/** Boundary validation for an Admin review: a non-empty batch of decisions. */
+export const reviewSchema = z.object({
+  actions: z
+    .array(
+      z.object({
+        target: z.enum(['actor', 'flow'], { message: 'Review target must be actor or flow' }),
+        id: z.string().uuid('Review target must be a valid id'),
+        decision: z.enum(['accept', 'reject'], { message: 'Decision must be accept or reject' }),
+      }),
+    )
+    .min(1, 'At least one review action is required'),
+})
 
 function firstIssue(error: z.ZodError): string {
   return error.issues[0]?.message ?? 'Invalid input'
@@ -115,4 +129,52 @@ export async function getWorkingStructure(
     repository.listFlows(themeId),
   ])
   return { status: 200, body: ok({ actors, flows }) }
+}
+
+/**
+ * Apply an Admin's accept/reject decisions to a theme's working structure
+ * through the pure accept-gate (ADR-0004) and persist the resulting statuses.
+ * Every action must target an element that exists in this theme; otherwise a
+ * 400 is returned and nothing is persisted. Returns the updated working
+ * structure (with statuses) so the workbench can refresh its review queue and
+ * accepted-only preview.
+ */
+export async function reviewStructure(
+  repository: StructureRepository,
+  themeId: string,
+  input: unknown,
+): Promise<ServiceResult<WorkingStructure>> {
+  const parsed = reviewSchema.safeParse(input)
+  if (!parsed.success) {
+    return { status: 400, body: fail(firstIssue(parsed.error)) }
+  }
+
+  const [actors, flows] = await Promise.all([
+    repository.listActors(themeId),
+    repository.listFlows(themeId),
+  ])
+
+  const actorIds = new Set(actors.map((actor) => actor.id))
+  const flowIds = new Set(flows.map((flow) => flow.id))
+  const targetsKnownElement = (action: ReviewAction): boolean =>
+    action.target === 'actor' ? actorIds.has(action.id) : flowIds.has(action.id)
+  if (!parsed.data.actions.every(targetsKnownElement)) {
+    return { status: 400, body: fail('Review target must be an element in this theme') }
+  }
+
+  const next = applyReview({ actors, flows }, parsed.data.actions)
+
+  // Persist only the elements whose status the decisions actually changed.
+  const actorStatusBefore = new Map(actors.map((actor) => [actor.id, actor.status]))
+  const flowStatusBefore = new Map(flows.map((flow) => [flow.id, flow.status]))
+  await Promise.all([
+    ...next.actors
+      .filter((actor) => actor.status !== actorStatusBefore.get(actor.id))
+      .map((actor) => repository.setActorStatus(themeId, actor.id, actor.status)),
+    ...next.flows
+      .filter((flow) => flow.status !== flowStatusBefore.get(flow.id))
+      .map((flow) => repository.setFlowStatus(themeId, flow.id, flow.status)),
+  ])
+
+  return { status: 200, body: ok(next) }
 }
