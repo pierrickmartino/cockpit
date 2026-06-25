@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, type FormEvent } from 'react'
 import type { ApiResponse } from '@/api/response'
 import type { Theme } from '@/domain/theme'
+import { StructureWorkbench } from './StructureWorkbench'
 
 /**
  * Minimal Admin workbench shell: creates an empty Theme and links to its viewer.
@@ -93,6 +94,8 @@ export default function AdminPage() {
           </Link>
         </section>
       )}
+
+      {created && <StructureWorkbench themeId={created.id} adminToken={adminToken} />}
     </main>
   )
 }
