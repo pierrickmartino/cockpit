@@ -21,11 +21,20 @@ _Avoid_: End user, consumer, client.
 ### Authoring
 
 **Theme**:
-A subject area that scopes one graph (e.g. AI, energy). Choosing a theme
-determines which actors, flows, and data are shown, plus the dashboard's
-organization and colors. Themes are isolated graphs — an actor authored in one
-theme is independent of the same real-world entity in another.
-_Avoid_: Topic, category, domain.
+A content/subject area that scopes one graph (e.g. AI, energy). Themes are
+isolated graphs — an actor authored in one is independent of the same real-world
+entity in another. Each published Theme is its own Viewer destination; Viewers
+land on one and do not switch between Themes. Its colors and organization come
+from a bound Presentation, not a separate user choice.
+_Avoid_: Topic, category, domain. (Never use "theme" for visual styling — that is
+Presentation.)
+
+**Presentation**:
+The visual and organizational config bound to a Theme by the Admin — palette,
+tier→color mapping, default-visible layers/filters, and default map framing.
+Frozen into the published snapshot. Not a separately selectable "design theme":
+choosing a Theme is choosing its content, and the Presentation comes with it.
+_Avoid_: Design theme, skin, style.
 
 **Generation model**:
 The LLM that assists the Admin in building a theme's graph. Runs with web search
