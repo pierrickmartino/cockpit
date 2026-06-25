@@ -134,8 +134,21 @@ _Avoid_: Approval flow.
 An Admin-accepted mapping from an actor to a live data source — e.g. price from a
 ticker on a market-data provider, or a Feed from a query on a news source. The
 accept-gate applies to the binding (accepted once), not to each value or item
-that flows through it.
+that flows through it. A binding also sets the ingestion cadence and the set of
+view-refresh options offered to Viewers.
 _Avoid_: Connection, integration, mapping.
+
+**Ingestion cadence**:
+How often Cockpit pulls a source binding's data from the upstream provider into
+the live overlay. Admin-set per binding; bounded by provider cost and rate
+limits.
+_Avoid_: Poll rate, sync interval.
+
+**View refresh cadence**:
+How often a Viewer's browser re-fetches the live overlay from Cockpit. The Viewer
+chooses from a set of options the Admin allows per binding; never finer than the
+ingestion cadence.
+_Avoid_: Poll rate, auto-refresh.
 
 **Citation**:
 A reference to a real, retrieved web source attached to a factual claim about an
