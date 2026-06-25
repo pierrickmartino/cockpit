@@ -82,10 +82,13 @@ themes. Identity is shared by key only; the graphs themselves stay separate.
 _Avoid_: Global id, registry id.
 
 **Flow**:
-A directed edge between actors expressing a relationship — supplies,
-invests-in, depends-on, exports-to. Flows carry the supply-chain dependency
-structure. A flow records how substitutable the dependency is (can it be sourced
-elsewhere?), which feeds the power computation.
+A directed dependency edge between actors. It always points from the dependent
+actor to the actor it depends on (the upstream supplier) — e.g. "Apple depends
+on TSMC" is a flow from Apple to TSMC. Relationships authored as supplies /
+invests-in / exports-to are recorded in this same dependent→depended-upon
+direction. A flow records how substitutable the dependency is (can it be sourced
+elsewhere?), which feeds the power computation: power accrues to the actor a
+flow points at.
 _Avoid_: Edge, link, connection.
 
 **Indicator**:
