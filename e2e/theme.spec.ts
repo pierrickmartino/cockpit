@@ -13,7 +13,9 @@ test('admin creates an empty theme and the viewer displays it', async ({ page })
   // Follow the link the admin shell surfaces to the viewer.
   await page.getByTestId('view-theme-link').click()
 
-  // Viewer shell: the persisted theme is displayed.
+  // Viewer shell: the theme is displayed, but with nothing published yet the
+  // viewer shows the empty state — it reads published snapshots, not the
+  // working state (ADR-0012).
   await expect(page.getByTestId('theme-title')).toHaveText(title)
-  await expect(page.getByTestId('theme-state')).toContainText('working')
+  await expect(page.getByTestId('not-published')).toBeVisible()
 })

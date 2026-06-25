@@ -1,4 +1,13 @@
-import { doublePrecision, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import {
+  doublePrecision,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from 'drizzle-orm/pg-core'
 
 /**
  * Authoring table for Themes. The published jsonb read model (ADR-0006/0012) is
@@ -54,3 +63,31 @@ export const flows = pgTable('flows', {
 })
 
 export type FlowRow = typeof flows.$inferSelect
+
+/**
+ * Published snapshots: the immutable, frozen jsonb read model Viewers consume
+ * (ADR-0012). One row per published version of a theme; `content` holds the
+ * frozen structure + computed power + placeholders. Snapshots are append-only —
+ * publishing inserts a new version and never updates a prior row. The unique
+ * (theme_id, version) constraint enforces a single, gap-free version sequence.
+ */
+export const publishedSnapshots = pgTable(
+  'published_snapshots',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    themeId: uuid('theme_id')
+      .notNull()
+      .references(() => themes.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    content: jsonb('content').notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    themeVersionUnique: unique('published_snapshots_theme_version_unique').on(
+      table.themeId,
+      table.version,
+    ),
+  }),
+)
+
+export type PublishedSnapshotRow = typeof publishedSnapshots.$inferSelect
