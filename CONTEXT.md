@@ -156,3 +156,11 @@ actor or flow. Produced by grounded generation (the model searches and fetches
 before asserting), so the Admin reviews actual source content rather than an
 invented link. Stored always; viewer-facing display is deferred.
 _Avoid_: Source link, reference (unqualified), footnote.
+
+**Workbench**:
+The Admin's authoring surface: a conversation panel with the generation model, a
+structured review surface (the proposed→accepted queue with inline citations and
+forms for location, tiers, actor key, and source bindings), and a live preview of
+the map and dependency graph. Editing happens in the structured surface; the map
+is preview and pin-placement only.
+_Avoid_: Editor, dashboard (for the Admin surface).
