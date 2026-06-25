@@ -15,3 +15,7 @@ mandatory citations are the only honest basis for that review — they also seed
 the sources for later automated ingestion. This is why every actor and flow has
 a status field and a sources field even though viewers don't yet see them; a
 future reader should not strip these as unused.
+
+**Amended by ADR-0011:** the per-item accept-gate applies to *authored structural*
+claims. Live ingested data (Indicators, Feeds) is gated at the source-binding
+level instead and shown as attributed data, not Admin-accepted claims.

@@ -130,6 +130,13 @@ accepts it. Every actor and flow carries a review status (proposed / accepted /
 rejected).
 _Avoid_: Approval flow.
 
+**Source binding**:
+An Admin-accepted mapping from an actor to a live data source — e.g. price from a
+ticker on a market-data provider, or a Feed from a query on a news source. The
+accept-gate applies to the binding (accepted once), not to each value or item
+that flows through it.
+_Avoid_: Connection, integration, mapping.
+
 **Citation**:
 A reference to a real, retrieved web source attached to a factual claim about an
 actor or flow. Produced by grounded generation (the model searches and fetches
