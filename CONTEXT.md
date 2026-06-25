@@ -23,7 +23,8 @@ _Avoid_: End user, consumer, client.
 **Theme**:
 A subject area that scopes one graph (e.g. AI, energy). Choosing a theme
 determines which actors, flows, and data are shown, plus the dashboard's
-organization and colors.
+organization and colors. Themes are isolated graphs — an actor authored in one
+theme is independent of the same real-world entity in another.
 _Avoid_: Topic, category, domain.
 
 **Generation model**:
@@ -63,6 +64,12 @@ as a pin at a single canonical location chosen by the Admin at authoring time.
 The map shows a point-actor's presence, not its power; its power is read from the
 dependency graph in its panel.
 _Avoid_: Marker, dot.
+
+**Actor key**:
+A stable cross-theme identifier stamped on every actor (e.g. a ticker or ISO
+country code) so the same real-world entity can be recognized across isolated
+themes. Identity is shared by key only; the graphs themselves stay separate.
+_Avoid_: Global id, registry id.
 
 **Flow**:
 A directed edge between actors expressing a relationship — supplies,
