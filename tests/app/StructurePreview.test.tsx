@@ -69,3 +69,29 @@ describe('StructurePreview power display', () => {
     expect(byActor('Island')).toContain('0%')
   })
 })
+
+describe('StructurePreview accepted-only projection', () => {
+  it('excludes proposed and rejected actors and flows from the preview', () => {
+    // Two accepted actors with an accepted flow, plus noise that must not show.
+    const accepted = [actor('a', 'AcceptedA'), actor('b', 'AcceptedB')]
+    const proposed = { ...actor('p', 'ProposedCo'), status: 'proposed' as const }
+    const rejected = { ...actor('r', 'RejectedCo'), status: 'rejected' as const }
+    const acceptedFlow = flow('a', 'b', 0)
+    const proposedFlow = { ...flow('a', 'p', 0), status: 'proposed' as const }
+
+    render(
+      <StructurePreview
+        actors={[...accepted, proposed, rejected]}
+        flows={[acceptedFlow, proposedFlow]}
+      />,
+    )
+
+    const actorItems = screen.getAllByTestId('actor-item').map((item) => item.textContent ?? '')
+    expect(actorItems.join(' ')).toContain('AcceptedA')
+    expect(actorItems.join(' ')).not.toContain('ProposedCo')
+    expect(actorItems.join(' ')).not.toContain('RejectedCo')
+
+    // Only the accepted flow between two accepted actors is shown.
+    expect(screen.getAllByTestId('flow-item')).toHaveLength(1)
+  })
+})

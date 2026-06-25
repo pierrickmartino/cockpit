@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import type { ApiResponse } from '@/api/response'
+import type { ReviewAction } from '@/domain/accept-gate'
 import type { Actor, ActorKind } from '@/domain/actor'
 import type { Flow } from '@/domain/flow'
 import type { WorkingStructure } from '@/domain/structure'
+import { ReviewQueue } from '@/app/admin/ReviewQueue'
 import { StructurePreview } from '@/app/admin/StructurePreview'
 
 interface StructureWorkbenchProps {
@@ -89,6 +91,25 @@ export function StructureWorkbench({ themeId, adminToken }: StructureWorkbenchPr
     }
   }
 
+  async function submitReview(action: ReviewAction) {
+    setError(null)
+    try {
+      const response = await fetch(`/api/themes/${themeId}/review`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ actions: [action] }),
+      })
+      const body: ApiResponse<WorkingStructure> = await response.json()
+      if (body.success) {
+        await loadStructure()
+      } else {
+        setError(body.error ?? 'Failed to review proposal')
+      }
+    } catch {
+      setError('Failed to reach the server')
+    }
+  }
+
   return (
     <section data-testid="structure-workbench">
       <h2>Working structure</h2>
@@ -102,6 +123,7 @@ export function StructureWorkbench({ themeId, adminToken }: StructureWorkbenchPr
         </p>
       )}
 
+      <ReviewQueue actors={actors} flows={flows} onReview={submitReview} />
       <StructurePreview actors={actors} flows={flows} />
     </section>
   )

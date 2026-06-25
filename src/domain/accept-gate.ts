@@ -1,5 +1,3 @@
-import type { Actor } from '@/domain/actor'
-import type { Flow } from '@/domain/flow'
 import type { ReviewStatus } from '@/domain/review'
 import type { WorkingStructure } from '@/domain/structure'
 
