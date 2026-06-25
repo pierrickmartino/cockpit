@@ -86,9 +86,12 @@ renders the latest value.
 _Avoid_: Metric, data point, stat.
 
 **Tier**:
-An actor's role within a theme (e.g. the lithography tier in the AI theme).
-Drives grouping and color.
-_Avoid_: Layer, category, rank.
+An actor's role or standing within a theme. For point-actors it expresses a
+function (e.g. the lithography tier in the AI theme); for place-actors it
+expresses leadership (e.g. leader / fast-follower / emerging) — this is what
+"most advanced region" means. Admin-authored and accepted with a citation, never
+a computed composite score. Drives grouping and color.
+_Avoid_: Layer, category, rank, score.
 
 **Power**:
 The property of an actor being upstream of many flows with few substitutes — a
