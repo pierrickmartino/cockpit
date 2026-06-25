@@ -40,3 +40,42 @@ _Avoid_: Draft, save.
 The stable snapshot that viewers see. Publishing promotes a snapshot to the
 viewer-facing state.
 _Avoid_: Release, live version.
+
+### Graph model
+
+The graph is the single underlying structure; the map, panels, and filters are
+all views over it.
+
+**Actor**:
+A node in the graph: a company, a country or region, a data center, an
+institution. Has a type, a location, tiers, and indicators.
+_Avoid_: Node, entity, data point.
+
+**Flow**:
+A directed edge between actors expressing a relationship — supplies,
+invests-in, depends-on, exports-to. Flows carry the supply-chain dependency
+structure.
+_Avoid_: Edge, link, connection.
+
+**Indicator**:
+A named, quantitative measure attached to an actor or a place (market cap,
+capex, capacity, investment). The part of the graph that automated ingestion
+refreshes on an interval; everything structural is fixed at publish time.
+_Avoid_: Metric, data point, stat.
+
+**Tier**:
+An actor's role within a theme (e.g. the lithography tier in the AI theme).
+Drives grouping and color.
+_Avoid_: Layer, category, rank.
+
+**Power**:
+The property of an actor being upstream of many flows with few substitutes — a
+structural chokepoint (e.g. ASML, TSMC). Identifying where power concentrates is
+the central purpose of the dashboard.
+_Avoid_: Importance, influence.
+
+**Filter**:
+A viewer control that removes actors, flows, or indicators from the current
+view by some criterion (tier, type, indicator threshold) to declutter. Filters
+hide; they never change the published graph.
+_Avoid_: Toggle, layer switch.
