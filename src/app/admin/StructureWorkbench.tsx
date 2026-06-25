@@ -5,6 +5,7 @@ import type { ApiResponse } from '@/api/response'
 import type { Actor, ActorKind } from '@/domain/actor'
 import type { Flow } from '@/domain/flow'
 import type { WorkingStructure } from '@/domain/structure'
+import { StructurePreview } from '@/app/admin/StructurePreview'
 
 interface StructureWorkbenchProps {
   themeId: string
@@ -242,35 +243,5 @@ function FlowForm({
         Add flow
       </button>
     </form>
-  )
-}
-
-function StructurePreview({ actors, flows }: WorkingStructure) {
-  const actorName = (id: string) => actors.find((actor) => actor.id === id)?.name ?? id
-
-  return (
-    <div data-testid="structure-preview">
-      <h3>Preview</h3>
-
-      <h4>Actors ({actors.length})</h4>
-      <ul>
-        {actors.map((actor) => (
-          <li key={actor.id} data-testid="actor-item">
-            {actor.name} ({actor.kind})
-            {actor.tier ? ` — ${actor.tier}` : ''}
-          </li>
-        ))}
-      </ul>
-
-      <h4>Flows ({flows.length})</h4>
-      <ul>
-        {flows.map((flow) => (
-          <li key={flow.id} data-testid="flow-item">
-            {actorName(flow.fromActorId)} → {actorName(flow.toActorId)} (substitutability{' '}
-            {flow.substitutability})
-          </li>
-        ))}
-      </ul>
-    </div>
   )
 }
