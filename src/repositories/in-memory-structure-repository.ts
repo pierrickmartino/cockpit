@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { Actor, NewActor } from '@/domain/actor'
 import type { Flow, NewFlow } from '@/domain/flow'
+import type { ReviewStatus } from '@/domain/review'
 import type { StructureRepository } from '@/repositories/structure-repository'
 
 /**
@@ -21,6 +22,7 @@ export class InMemoryStructureRepository implements StructureRepository {
       actorKey: input.actorKey,
       tier: input.tier ?? null,
       location: input.location ?? null,
+      status: 'proposed',
       createdAt: new Date(),
     }
     this.actors.push({ ...actor })
@@ -34,6 +36,7 @@ export class InMemoryStructureRepository implements StructureRepository {
       fromActorId: input.fromActorId,
       toActorId: input.toActorId,
       substitutability: input.substitutability,
+      status: 'proposed',
       createdAt: new Date(),
     }
     this.flows.push({ ...flow })
@@ -46,5 +49,27 @@ export class InMemoryStructureRepository implements StructureRepository {
 
   async listFlows(themeId: string): Promise<Flow[]> {
     return this.flows.filter((flow) => flow.themeId === themeId).map((flow) => ({ ...flow }))
+  }
+
+  async setActorStatus(
+    themeId: string,
+    actorId: string,
+    status: ReviewStatus,
+  ): Promise<Actor | null> {
+    const actor = this.actors.find((entry) => entry.themeId === themeId && entry.id === actorId)
+    if (!actor) {
+      return null
+    }
+    actor.status = status
+    return { ...actor }
+  }
+
+  async setFlowStatus(themeId: string, flowId: string, status: ReviewStatus): Promise<Flow | null> {
+    const flow = this.flows.find((entry) => entry.themeId === themeId && entry.id === flowId)
+    if (!flow) {
+      return null
+    }
+    flow.status = status
+    return { ...flow }
   }
 }

@@ -5,12 +5,16 @@
  * 0 means no substitute (a hard structural chokepoint), 1 means freely
  * substitutable.
  */
+import type { ReviewStatus } from '@/domain/review'
+
 export interface Flow {
   id: string
   themeId: string
   fromActorId: string
   toActorId: string
   substitutability: number
+  /** Accept-gate status; a Flow enters `proposed` and is reviewed (ADR-0004). */
+  status: ReviewStatus
   createdAt: Date
 }
 

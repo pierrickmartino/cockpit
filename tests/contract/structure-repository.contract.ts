@@ -84,5 +84,58 @@ export function runStructureRepositoryContract(
       expect(await repository.listActors(ABSENT_THEME)).toEqual([])
       expect(await repository.listFlows(ABSENT_THEME)).toEqual([])
     })
+
+    it('creates actors and flows as proposed (accept-gate entry status)', async () => {
+      const { repository, themeId } = await createContext()
+      const from = await repository.addActor({ themeId, name: 'TSMC', kind: 'point', actorKey: 'TSM' })
+      const to = await repository.addActor({ themeId, name: 'ASML', kind: 'point', actorKey: 'ASML' })
+      const flow = await repository.addFlow({
+        themeId,
+        fromActorId: from.id,
+        toActorId: to.id,
+        substitutability: 0.2,
+      })
+
+      expect(from.status).toBe('proposed')
+      expect(flow.status).toBe('proposed')
+    })
+
+    it('moves an actor to a new review status and returns the updated actor', async () => {
+      const { repository, themeId } = await createContext()
+      const actor = await repository.addActor({ themeId, name: 'TSMC', kind: 'point', actorKey: 'TSM' })
+
+      const updated = await repository.setActorStatus(themeId, actor.id, 'accepted')
+
+      expect(updated?.status).toBe('accepted')
+      expect(updated?.id).toBe(actor.id)
+      const [reloaded] = await repository.listActors(themeId)
+      expect(reloaded.status).toBe('accepted')
+    })
+
+    it('moves a flow to a new review status and returns the updated flow', async () => {
+      const { repository, themeId } = await createContext()
+      const from = await repository.addActor({ themeId, name: 'TSMC', kind: 'point', actorKey: 'TSM' })
+      const to = await repository.addActor({ themeId, name: 'ASML', kind: 'point', actorKey: 'ASML' })
+      const flow = await repository.addFlow({
+        themeId,
+        fromActorId: from.id,
+        toActorId: to.id,
+        substitutability: 0.2,
+      })
+
+      const updated = await repository.setFlowStatus(themeId, flow.id, 'rejected')
+
+      expect(updated?.status).toBe('rejected')
+      const [reloaded] = await repository.listFlows(themeId)
+      expect(reloaded.status).toBe('rejected')
+    })
+
+    it('returns null when setting status on an element outside the theme', async () => {
+      const { repository, themeId } = await createContext()
+      const actor = await repository.addActor({ themeId, name: 'TSMC', kind: 'point', actorKey: 'TSM' })
+
+      expect(await repository.setActorStatus(ABSENT_THEME, actor.id, 'accepted')).toBeNull()
+      expect(await repository.setFlowStatus(themeId, ABSENT_THEME, 'accepted')).toBeNull()
+    })
   })
 }
