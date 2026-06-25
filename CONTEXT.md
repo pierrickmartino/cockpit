@@ -28,8 +28,9 @@ theme is independent of the same real-world entity in another.
 _Avoid_: Topic, category, domain.
 
 **Generation model**:
-The LLM that assists the Admin in building a theme's graph. An authoring-time
-tool, never invoked at view time.
+The LLM that assists the Admin in building a theme's graph. Runs with web search
+and fetch so its claims are grounded in real retrieved sources. An
+authoring-time tool, never invoked at view time.
 _Avoid_: AI, the model (unqualified).
 
 **Snapshot**:
@@ -123,7 +124,8 @@ rejected).
 _Avoid_: Approval flow.
 
 **Citation**:
-A source reference attached to a factual claim about an actor or flow. The Admin
-reviews citations to confirm a claim before accepting it; unsourced claims are
-flagged. Stored always; viewer-facing display is deferred.
+A reference to a real, retrieved web source attached to a factual claim about an
+actor or flow. Produced by grounded generation (the model searches and fetches
+before asserting), so the Admin reviews actual source content rather than an
+invented link. Stored always; viewer-facing display is deferred.
 _Avoid_: Source link, reference (unqualified), footnote.
