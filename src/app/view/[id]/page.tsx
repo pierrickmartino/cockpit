@@ -1,10 +1,14 @@
 import { notFound } from 'next/navigation'
-import { getThemeRepository } from '@/repositories/factory'
+import { getSnapshotRepository, getThemeRepository } from '@/repositories/factory'
+import { getPublishedSnapshot } from '@/services/snapshot-service'
 import { getTheme } from '@/services/theme-service'
+import { PublishedSnapshotView } from './PublishedSnapshotView'
 
 /**
- * Minimal Viewer shell: loads a published-or-working Theme by id and displays
- * it. Later slices render the MapLibre map, panels, and live overlay.
+ * Viewer destination for a theme: renders the latest **published** snapshot,
+ * never the working state (ADR-0012). The frozen snapshot is the only thing a
+ * Viewer ever sees, so unaccepted/unpublished authoring edits cannot leak here.
+ * Until the theme is published it shows an empty-state message.
  */
 export default async function ViewerPage({
   params,
@@ -12,19 +16,27 @@ export default async function ViewerPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const result = await getTheme(getThemeRepository(), id)
+  const themeResult = await getTheme(getThemeRepository(), id)
 
-  if (!result.body.success || !result.body.data) {
+  if (!themeResult.body.success || !themeResult.body.data) {
     notFound()
   }
 
-  const theme = result.body.data
+  const theme = themeResult.body.data
+  const snapshotResult = await getPublishedSnapshot(getSnapshotRepository(), id)
+  const snapshot = snapshotResult.body.success ? snapshotResult.body.data : null
 
   return (
     <main>
       <h1 data-testid="theme-title">{theme.title}</h1>
-      <p data-testid="theme-state">State: {theme.state}</p>
-      <p>This theme is empty. The map and panels arrive in later slices.</p>
+      {snapshot ? (
+        <>
+          <p data-testid="published-version">Published version {snapshot.version}</p>
+          <PublishedSnapshotView content={snapshot.content} />
+        </>
+      ) : (
+        <p data-testid="not-published">This theme has not been published yet.</p>
+      )}
     </main>
   )
 }

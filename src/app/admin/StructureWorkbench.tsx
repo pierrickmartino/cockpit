@@ -5,6 +5,7 @@ import type { ApiResponse } from '@/api/response'
 import type { ReviewAction } from '@/domain/accept-gate'
 import type { Actor, ActorKind } from '@/domain/actor'
 import type { Flow } from '@/domain/flow'
+import type { PublishedSnapshot } from '@/domain/published-snapshot'
 import type { WorkingStructure } from '@/domain/structure'
 import { ReviewQueue } from '@/app/admin/ReviewQueue'
 import { StructurePreview } from '@/app/admin/StructurePreview'
@@ -25,6 +26,7 @@ export function StructureWorkbench({ themeId, adminToken }: StructureWorkbenchPr
   const [actors, setActors] = useState<Actor[]>([])
   const [flows, setFlows] = useState<Flow[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [published, setPublished] = useState<PublishedSnapshot | null>(null)
 
   const authHeaders = useCallback((): Record<string, string> => {
     const headers: Record<string, string> = { 'content-type': 'application/json' }
@@ -110,6 +112,24 @@ export function StructureWorkbench({ themeId, adminToken }: StructureWorkbenchPr
     }
   }
 
+  async function submitPublish() {
+    setError(null)
+    try {
+      const response = await fetch(`/api/themes/${themeId}/publish`, {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      const body: ApiResponse<PublishedSnapshot> = await response.json()
+      if (body.success && body.data) {
+        setPublished(body.data)
+      } else {
+        setError(body.error ?? 'Failed to publish')
+      }
+    } catch {
+      setError('Failed to reach the server')
+    }
+  }
+
   return (
     <section data-testid="structure-workbench">
       <h2>Working structure</h2>
@@ -125,6 +145,17 @@ export function StructureWorkbench({ themeId, adminToken }: StructureWorkbenchPr
 
       <ReviewQueue actors={actors} flows={flows} onReview={submitReview} />
       <StructurePreview actors={actors} flows={flows} />
+
+      <div data-testid="publish-panel">
+        <h3>Publish</h3>
+        <p>Freeze the accepted structure as the version viewers see.</p>
+        <button type="button" data-testid="publish-button" onClick={() => void submitPublish()}>
+          Publish
+        </button>
+        {published && (
+          <p data-testid="publish-status">Published version {published.version}.</p>
+        )}
+      </div>
     </section>
   )
 }
