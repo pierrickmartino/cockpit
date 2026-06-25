@@ -1,7 +1,10 @@
 import { z } from 'zod'
-import { fail, ok, type ApiResponse } from '@/api/response'
+import { fail, ok } from '@/api/response'
 import type { Theme } from '@/domain/theme'
 import type { ThemeRepository } from '@/repositories/theme-repository'
+import type { ServiceResult } from '@/services/service-result'
+
+export type { ServiceResult }
 
 /** Input validation for creating a Theme (boundary validation, per rules). */
 export const createThemeSchema = z.object({
@@ -9,12 +12,6 @@ export const createThemeSchema = z.object({
 })
 
 export type CreateThemeInput = z.infer<typeof createThemeSchema>
-
-/** An HTTP status paired with the response envelope to return. */
-export interface ServiceResult<T> {
-  status: number
-  body: ApiResponse<T>
-}
 
 /**
  * Validate and persist a new Theme. Returns a 201 success envelope, or a 400
