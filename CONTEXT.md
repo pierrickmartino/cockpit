@@ -103,6 +103,13 @@ other claim. Identifying where power concentrates is the central purpose of the
 dashboard.
 _Avoid_: Importance, influence.
 
+**Feed**:
+A per-actor stream of dated, sourced textual items (e.g. news) attached to an
+actor. Distinct from Indicator (numeric) — a Feed is a timeline of events, not a
+value. Populated by automated ingestion and rendered as a timeline in the actor
+panel.
+_Avoid_: News, timeline, stream (unqualified).
+
 **Filter**:
 A viewer control that removes actors, flows, or indicators from the current
 view by some criterion (tier, type, indicator threshold) to declutter. Filters
