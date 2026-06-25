@@ -74,7 +74,8 @@ _Avoid_: Global id, registry id.
 **Flow**:
 A directed edge between actors expressing a relationship — supplies,
 invests-in, depends-on, exports-to. Flows carry the supply-chain dependency
-structure.
+structure. A flow records how substitutable the dependency is (can it be sourced
+elsewhere?), which feeds the power computation.
 _Avoid_: Edge, link, connection.
 
 **Indicator**:
@@ -95,8 +96,10 @@ _Avoid_: Layer, category, rank, score.
 
 **Power**:
 The property of an actor being upstream of many flows with few substitutes — a
-structural chokepoint (e.g. ASML, TSMC). Identifying where power concentrates is
-the central purpose of the dashboard.
+structural chokepoint (e.g. ASML, TSMC). Computed from the graph (centrality
+weighted by flow substitutability), proposed to the Admin, and accepted like any
+other claim. Identifying where power concentrates is the central purpose of the
+dashboard.
 _Avoid_: Importance, influence.
 
 **Filter**:
