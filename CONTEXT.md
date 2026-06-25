@@ -164,11 +164,21 @@ chooses from a set of options the Admin allows per binding; never finer than the
 ingestion cadence.
 _Avoid_: Poll rate, auto-refresh.
 
+**Claim**:
+A single grounded assertion an actor or flow makes about the world, and the unit
+a Citation backs. An actor carries a *relevance* claim (why it belongs in the
+theme), and optionally *tier* and *location* claims; a flow carries a
+*dependency* claim (that the dependency exists) and a *substitutability* claim.
+Identity-like attributes (an actor's key, an actor's kind) are not claims — they
+are lookups, not assertions about the world, and need no citation.
+_Avoid_: Assertion, fact, statement (unqualified).
+
 **Citation**:
-A reference to a real, retrieved web source attached to a factual claim about an
+A reference to a real, retrieved web source attached to a specific Claim of an
 actor or flow. Produced by grounded generation (the model searches and fetches
 before asserting), so the Admin reviews actual source content rather than an
-invented link. Stored always; viewer-facing display is deferred.
+invented link. Each citation names the claim it grounds and carries the retrieved
+snippet, not just a link. Stored always; viewer-facing display is deferred.
 _Avoid_: Source link, reference (unqualified), footnote.
 
 **Workbench**:
