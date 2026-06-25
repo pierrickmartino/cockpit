@@ -17,3 +17,8 @@ The normalized tables are the authoring source of truth; the jsonb published
 version is the read model — the read/write split this project already favors.
 Computing power in-app also turns "where power lies" into a real, reviewable
 metric rather than a hand-authored guess.
+
+**Revised by ADR-0012:** the published `jsonb` no longer freezes indicator values.
+It freezes only static structure (actors, flows, tiers, locations, citations,
+source bindings) and computed power; live Indicator values and Feed items are
+served from a live overlay and merged at read time.
