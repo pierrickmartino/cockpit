@@ -115,8 +115,10 @@ _Avoid_: Importance, influence.
 **Feed**:
 A per-actor stream of dated, sourced textual items (e.g. news) attached to an
 actor. Distinct from Indicator (numeric) — a Feed is a timeline of events, not a
-value. Populated by automated ingestion and rendered as a timeline in the actor
-panel.
+value, and unlike Indicators it is retention-bounded (recent items only), not
+kept forever. Populated by automated ingestion from a news provider, stored raw
+(title, summary, url, source, timestamp); any sentiment is provider-supplied and
+attributed, never Cockpit's own. Rendered as a timeline in the actor panel.
 _Avoid_: News, timeline, stream (unqualified).
 
 **Filter**:
