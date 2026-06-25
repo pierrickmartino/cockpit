@@ -4,6 +4,11 @@ import { defineConfig, devices } from '@playwright/test'
 const PORT = 3100
 const baseURL = `http://127.0.0.1:${PORT}`
 
+// Admin credential for the authoring routes. CI provides ADMIN_TOKEN; locally we
+// fall back to a fixed dev value. The E2E spec reads the same value so the admin
+// shell can authenticate against the server started below.
+export const ADMIN_TOKEN = process.env.ADMIN_TOKEN ?? 'e2e-admin-token'
+
 // In this managed environment Chromium is pre-installed; CI installs its own.
 const preinstalledChromium = '/opt/pw-browsers/chromium'
 const executablePath =
@@ -30,5 +35,6 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    env: { ADMIN_TOKEN },
   },
 })

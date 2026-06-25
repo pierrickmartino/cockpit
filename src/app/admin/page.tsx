@@ -11,6 +11,7 @@ import type { Theme } from '@/domain/theme'
  */
 export default function AdminPage() {
   const [title, setTitle] = useState('')
+  const [adminToken, setAdminToken] = useState('')
   const [created, setCreated] = useState<Theme | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,9 +21,16 @@ export default function AdminPage() {
     setCreated(null)
 
     try {
+      // Authoring is admin-only: present the admin token as a Bearer credential.
+      // Kept in component state (never bundled) so the secret stays server-side.
+      const headers: Record<string, string> = { 'content-type': 'application/json' }
+      if (adminToken) {
+        headers.authorization = `Bearer ${adminToken}`
+      }
+
       const response = await fetch('/api/themes', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers,
         body: JSON.stringify({ title }),
       })
       const body: ApiResponse<Theme> = await response.json()
@@ -43,17 +51,30 @@ export default function AdminPage() {
       <h1>Admin workbench</h1>
 
       <form onSubmit={handleSubmit}>
-        <label htmlFor="theme-title">Theme title</label>{' '}
-        <input
-          id="theme-title"
-          data-testid="theme-title-input"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="e.g. Semiconductors"
-        />{' '}
-        <button type="submit" data-testid="create-theme-button">
-          Create theme
-        </button>
+        <p>
+          <label htmlFor="admin-token">Admin token</label>{' '}
+          <input
+            id="admin-token"
+            type="password"
+            data-testid="admin-token-input"
+            value={adminToken}
+            onChange={(event) => setAdminToken(event.target.value)}
+            placeholder="Admin token"
+          />
+        </p>
+        <p>
+          <label htmlFor="theme-title">Theme title</label>{' '}
+          <input
+            id="theme-title"
+            data-testid="theme-title-input"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="e.g. Semiconductors"
+          />{' '}
+          <button type="submit" data-testid="create-theme-button">
+            Create theme
+          </button>
+        </p>
       </form>
 
       {error && (
