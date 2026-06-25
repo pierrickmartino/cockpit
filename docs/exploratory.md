@@ -18,3 +18,17 @@ failure towers over a merely-tight dependency rather than scaling linearly.
 Deferred because it introduces a tunable exponent with no principled default and
 hurts interpretability. Revisit if real themes produce rankings where
 sole-source chokepoints feel under-weighted relative to substitutable ones.
+
+### Propagating power (transitive centrality)
+
+v1 computes power as a purely *local* weighted in-degree: an actor's score is the
+sum of `(1 − substitutability)` over its incoming flows only. This misses the
+**second-order chokepoint** — if everyone depends on TSMC and only TSMC depends
+on ASML, ASML scores low despite being the deepest structural chokepoint.
+
+A propagating metric — weighted PageRank or Katz centrality over the
+dependency graph — would let power flow transitively, so a supplier inherits
+leverage from the powerful actors that depend on it. Deferred because it needs
+damping/iteration and cycle handling, and the scores stop being human-checkable
+(tests become "trust the eigenvector" rather than arithmetic). Adopt once the
+local metric demonstrably under-ranks deep upstream chokepoints on real themes.
