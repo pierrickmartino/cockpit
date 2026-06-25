@@ -94,3 +94,23 @@ A viewer control that removes actors, flows, or indicators from the current
 view by some criterion (tier, type, indicator threshold) to declutter. Filters
 hide; they never change the published graph.
 _Avoid_: Toggle, layer switch.
+
+### Authoring loop
+
+**Proposal**:
+An actor or flow the generation model suggests during a conversational build. It
+enters the graph as *proposed* and is not part of any snapshot until the Admin
+accepts it.
+_Avoid_: Suggestion, draft element.
+
+**Accept-gate**:
+The rule that no proposal becomes part of a snapshot until the Admin explicitly
+accepts it. Every actor and flow carries a review status (proposed / accepted /
+rejected).
+_Avoid_: Approval flow.
+
+**Citation**:
+A source reference attached to a factual claim about an actor or flow. The Admin
+reviews citations to confirm a claim before accepting it; unsourced claims are
+flagged. Stored always; viewer-facing display is deferred.
+_Avoid_: Source link, reference (unqualified), footnote.
