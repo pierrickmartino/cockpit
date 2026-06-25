@@ -28,6 +28,8 @@ export const actors = pgTable('actors', {
   actorKey: text('actor_key').notNull(),
   tier: text('tier'),
   location: text('location'),
+  // Accept-gate review status (ADR-0004); elements enter as 'proposed'.
+  status: text('status').notNull().default('proposed'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
@@ -46,6 +48,8 @@ export const flows = pgTable('flows', {
     .references(() => actors.id, { onDelete: 'cascade' }),
   // Normalised [0, 1] dependency weight; range is enforced at the service boundary.
   substitutability: doublePrecision('substitutability').notNull(),
+  // Accept-gate review status (ADR-0004); elements enter as 'proposed'.
+  status: text('status').notNull().default('proposed'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 

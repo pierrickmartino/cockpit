@@ -5,6 +5,8 @@
  * themes only by `actorKey` (ADR-0005); the graphs themselves stay separate.
  */
 
+import type { ReviewStatus } from '@/domain/review'
+
 /** How an Actor anchors on the map: an area (choropleth) vs a pin (CONTEXT.md). */
 export type ActorKind = 'place' | 'point'
 
@@ -21,6 +23,8 @@ export interface Actor {
   tier: string | null
   /** Canonical location label (area for place-actors, site for point-actors). */
   location: string | null
+  /** Accept-gate status; an Actor enters `proposed` and is reviewed (ADR-0004). */
+  status: ReviewStatus
   createdAt: Date
 }
 

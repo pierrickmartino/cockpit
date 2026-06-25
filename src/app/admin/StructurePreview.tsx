@@ -1,13 +1,17 @@
 import type { Actor } from '@/domain/actor'
 import type { WorkingStructure } from '@/domain/structure'
+import { acceptedStructure } from '@/domain/accept-gate'
 import { computePower, normalizePower } from '@/domain/power'
 
 /**
- * Read-only preview of a theme's working structure for the admin workbench. Lists
- * actors and dependency flows, and ranks actors by computed power (ADR-0018) so
- * the admin can see which actors are structural chokepoints as they author.
+ * Read-only preview of a theme's working structure for the admin workbench.
+ * Reflects accepted-only state (accept-gate, ADR-0004): proposed and rejected
+ * elements are excluded so the preview shows what would publish. Ranks the
+ * accepted actors by computed power (ADR-0018) so the admin can see which
+ * actors are structural chokepoints as they author.
  */
-export function StructurePreview({ actors, flows }: WorkingStructure) {
+export function StructurePreview(structure: WorkingStructure) {
+  const { actors, flows } = acceptedStructure(structure)
   const actorName = (id: string) => actors.find((actor: Actor) => actor.id === id)?.name ?? id
 
   const raw = computePower({ actors, flows })

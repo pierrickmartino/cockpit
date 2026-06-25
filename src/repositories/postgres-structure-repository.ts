@@ -1,8 +1,9 @@
-import { asc, eq } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import type { Database } from '@/db/client'
 import { actors, flows, type ActorRow, type FlowRow } from '@/db/schema'
 import type { Actor, ActorKind, NewActor } from '@/domain/actor'
 import type { Flow, NewFlow } from '@/domain/flow'
+import type { ReviewStatus } from '@/domain/review'
 import type { StructureRepository } from '@/repositories/structure-repository'
 
 /** Postgres-backed StructureRepository. Verified by the shared contract suite. */
@@ -54,6 +55,28 @@ export class PostgresStructureRepository implements StructureRepository {
       .orderBy(asc(flows.createdAt), asc(flows.id))
     return rows.map(toFlow)
   }
+
+  async setActorStatus(
+    themeId: string,
+    actorId: string,
+    status: ReviewStatus,
+  ): Promise<Actor | null> {
+    const [row] = await this.db
+      .update(actors)
+      .set({ status })
+      .where(and(eq(actors.id, actorId), eq(actors.themeId, themeId)))
+      .returning()
+    return row ? toActor(row) : null
+  }
+
+  async setFlowStatus(themeId: string, flowId: string, status: ReviewStatus): Promise<Flow | null> {
+    const [row] = await this.db
+      .update(flows)
+      .set({ status })
+      .where(and(eq(flows.id, flowId), eq(flows.themeId, themeId)))
+      .returning()
+    return row ? toFlow(row) : null
+  }
 }
 
 function toActor(row: ActorRow): Actor {
@@ -65,6 +88,7 @@ function toActor(row: ActorRow): Actor {
     actorKey: row.actorKey,
     tier: row.tier,
     location: row.location,
+    status: row.status as ReviewStatus,
     createdAt: row.createdAt,
   }
 }
@@ -76,6 +100,7 @@ function toFlow(row: FlowRow): Flow {
     fromActorId: row.fromActorId,
     toActorId: row.toActorId,
     substitutability: row.substitutability,
+    status: row.status as ReviewStatus,
     createdAt: row.createdAt,
   }
 }
