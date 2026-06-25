@@ -73,7 +73,9 @@ _Avoid_: Edge, link, connection.
 **Indicator**:
 A named, quantitative measure attached to an actor or a place (market cap,
 capex, capacity, investment). The part of the graph that automated ingestion
-refreshes on an interval; everything structural is fixed at publish time.
+refreshes on an interval; everything structural is fixed at publish time. Values
+are kept as an append-only history so trends are recoverable, even though v1 only
+renders the latest value.
 _Avoid_: Metric, data point, stat.
 
 **Tier**:
