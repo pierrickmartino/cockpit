@@ -48,8 +48,21 @@ all views over it.
 
 **Actor**:
 A node in the graph: a company, a country or region, a data center, an
-institution. Has a type, a location, tiers, and indicators.
+institution. Has a type, a location, tiers, and indicators. Comes in two kinds —
+place-actors and point-actors — that render differently on the map.
 _Avoid_: Node, entity, data point.
+
+**Place-actor**:
+An actor that is an area (country, region). Rendered as a choropleth — the shape
+filled by an indicator's value. Place-actors are the basemap.
+_Avoid_: Territory, zone.
+
+**Point-actor**:
+An actor that sits at a location (company, data center, institution). Rendered
+as a pin at a single canonical location chosen by the Admin at authoring time.
+The map shows a point-actor's presence, not its power; its power is read from the
+dependency graph in its panel.
+_Avoid_: Marker, dot.
 
 **Flow**:
 A directed edge between actors expressing a relationship — supplies,
