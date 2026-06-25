@@ -49,3 +49,9 @@ docker-compose.override.yml
 
 # Storybook
 storybook-static/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
