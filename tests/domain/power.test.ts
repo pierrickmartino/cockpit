@@ -17,6 +17,7 @@ function actor(id: string): Actor {
     tier: null,
     location: null,
     status: 'accepted',
+    citations: [],
     createdAt: new Date(),
   }
 }
@@ -30,6 +31,7 @@ function flow(from: string, to: string, substitutability: number): Flow {
     toActorId: to,
     substitutability,
     status: 'accepted',
+    citations: [],
     createdAt: new Date(),
   }
 }

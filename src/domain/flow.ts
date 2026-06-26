@@ -5,6 +5,7 @@
  * 0 means no substitute (a hard structural chokepoint), 1 means freely
  * substitutable.
  */
+import type { Citation } from '@/domain/citation'
 import type { ReviewStatus } from '@/domain/review'
 
 export interface Flow {
@@ -15,6 +16,8 @@ export interface Flow {
   substitutability: number
   /** Accept-gate status; a Flow enters `proposed` and is reviewed (ADR-0004). */
   status: ReviewStatus
+  /** Per-claim citations grounding this flow; empty when nothing is sourced yet. */
+  citations: Citation[]
   createdAt: Date
 }
 
@@ -24,4 +27,6 @@ export interface NewFlow {
   fromActorId: string
   toActorId: string
   substitutability: number
+  /** Per-claim citations to attach; defaults to an empty list when omitted. */
+  citations?: Citation[]
 }

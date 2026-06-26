@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Actor } from '@/domain/actor'
+import type { Citation } from '@/domain/citation'
 import type { Flow } from '@/domain/flow'
 import type { ReviewStatus } from '@/domain/review'
 import type { WorkingStructure } from '@/domain/structure'
@@ -15,6 +16,7 @@ function actor(id: string, status: ReviewStatus, overrides: Partial<Actor> = {})
     tier: null,
     location: null,
     status,
+    citations: [],
     createdAt: new Date('2026-01-01T00:00:00Z'),
     ...overrides,
   }
@@ -28,6 +30,7 @@ function flow(id: string, fromActorId: string, toActorId: string, status: Review
     toActorId,
     substitutability: 0,
     status,
+    citations: [],
     createdAt: new Date('2026-01-01T00:00:00Z'),
   }
 }
@@ -115,10 +118,61 @@ describe('buildSnapshot', () => {
     expect(snapshot.power.apple).toEqual({ raw: 0, normalized: 0 })
   })
 
-  it('emits empty citations and bindings placeholders', () => {
+  it('emits empty citations and bindings placeholders when nothing is sourced', () => {
     const snapshot = buildSnapshot({ actors: [actor('a', 'accepted')], flows: [] })
 
     expect(snapshot.citations).toEqual([])
     expect(snapshot.bindings).toEqual([])
+  })
+
+  it('freezes citations from accepted actors and flows, tagged with their owning element', () => {
+    const relevance: Citation = {
+      claim: 'relevance',
+      url: 'https://example.com/tsmc',
+      title: 'TSMC leads leading-edge foundry',
+      quotedText: 'TSMC makes the majority of the world’s most advanced chips.',
+    }
+    const dependency: Citation = {
+      claim: 'dependency',
+      url: 'https://example.com/apple-tsmc',
+      title: 'Apple depends on TSMC',
+      quotedText: 'Apple sources its silicon exclusively from TSMC.',
+    }
+
+    const structure: WorkingStructure = {
+      actors: [
+        actor('apple', 'accepted'),
+        actor('tsmc', 'accepted', { citations: [relevance] }),
+      ],
+      flows: [{ ...flow('f', 'apple', 'tsmc', 'accepted'), citations: [dependency] }],
+    }
+
+    const snapshot = buildSnapshot(structure)
+
+    expect(snapshot.citations).toEqual([
+      { target: 'actor', elementId: 'tsmc', ...relevance },
+      { target: 'flow', elementId: 'f', ...dependency },
+    ])
+  })
+
+  it('excludes citations of proposed and rejected elements from the snapshot', () => {
+    const proposed: Citation = {
+      claim: 'relevance',
+      url: 'https://example.com/proposed',
+      title: 'Unaccepted source',
+      quotedText: 'This actor is only proposed.',
+    }
+
+    const structure: WorkingStructure = {
+      actors: [
+        actor('accepted-actor', 'accepted'),
+        actor('proposed-actor', 'proposed', { citations: [proposed] }),
+      ],
+      flows: [],
+    }
+
+    const snapshot = buildSnapshot(structure)
+
+    expect(snapshot.citations).toEqual([])
   })
 })

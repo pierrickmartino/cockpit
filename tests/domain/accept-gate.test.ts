@@ -18,6 +18,7 @@ function actor(id: string, status: ReviewStatus = 'proposed'): Actor {
     tier: null,
     location: null,
     status,
+    citations: [],
     createdAt: new Date(),
   }
 }
@@ -30,6 +31,7 @@ function flow(id: string, from: string, to: string, status: ReviewStatus = 'prop
     toActorId: to,
     substitutability: 0,
     status,
+    citations: [],
     createdAt: new Date(),
   }
 }

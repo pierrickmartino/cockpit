@@ -8,6 +8,7 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core'
+import type { Citation } from '@/domain/citation'
 
 /**
  * Authoring table for Themes. The published jsonb read model (ADR-0006/0012) is
@@ -39,6 +40,9 @@ export const actors = pgTable('actors', {
   location: text('location'),
   // Accept-gate review status (ADR-0004); elements enter as 'proposed'.
   status: text('status').notNull().default('proposed'),
+  // Per-claim citations (ADR-0021); jsonb because they are only ever read with
+  // their owning element and are frozen into the snapshot jsonb anyway.
+  citations: jsonb('citations').$type<Citation[]>().notNull().default([]),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
@@ -59,6 +63,8 @@ export const flows = pgTable('flows', {
   substitutability: doublePrecision('substitutability').notNull(),
   // Accept-gate review status (ADR-0004); elements enter as 'proposed'.
   status: text('status').notNull().default('proposed'),
+  // Per-claim citations (ADR-0021); jsonb for the same reasons as on actors.
+  citations: jsonb('citations').$type<Citation[]>().notNull().default([]),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
