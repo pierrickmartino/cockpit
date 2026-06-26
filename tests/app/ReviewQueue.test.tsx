@@ -2,12 +2,22 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { ReviewQueue } from '@/app/admin/ReviewQueue'
 import type { Actor } from '@/domain/actor'
+import type { Citation } from '@/domain/citation'
 import type { Flow } from '@/domain/flow'
 import type { ReviewStatus } from '@/domain/review'
 
 const THEME_ID = '00000000-0000-0000-0000-000000000000'
 
-function actor(id: string, name: string, status: ReviewStatus): Actor {
+function citation(claim: Citation['claim'], quotedText: string): Citation {
+  return { claim, url: `https://example.test/${claim}`, title: `Source ${claim}`, quotedText }
+}
+
+function actor(
+  id: string,
+  name: string,
+  status: ReviewStatus,
+  overrides: Partial<Actor> = {},
+): Actor {
   return {
     id,
     themeId: THEME_ID,
@@ -19,10 +29,17 @@ function actor(id: string, name: string, status: ReviewStatus): Actor {
     status,
     citations: [],
     createdAt: new Date(),
+    ...overrides,
   }
 }
 
-function flow(id: string, from: string, to: string, status: ReviewStatus): Flow {
+function flow(
+  id: string,
+  from: string,
+  to: string,
+  status: ReviewStatus,
+  overrides: Partial<Flow> = {},
+): Flow {
   return {
     id,
     themeId: THEME_ID,
@@ -32,6 +49,7 @@ function flow(id: string, from: string, to: string, status: ReviewStatus): Flow 
     status,
     citations: [],
     createdAt: new Date(),
+    ...overrides,
   }
 }
 
@@ -84,5 +102,52 @@ describe('ReviewQueue', () => {
     fireEvent.click(within(item).getByRole('button', { name: 'Reject' }))
 
     expect(onReview).toHaveBeenCalledWith({ target: 'flow', id: 'f', decision: 'reject' })
+  })
+
+  it("shows an actor's citations grouped by claim, with the retrieved snippet", () => {
+    const proposed = actor('a', 'Proposed Co', 'proposed', {
+      tier: 'foundry',
+      citations: [
+        citation('relevance', 'central to AI compute'),
+        citation('tier', 'a leading-edge foundry'),
+      ],
+    })
+
+    render(<ReviewQueue actors={[proposed]} flows={[]} onReview={vi.fn()} />)
+
+    const item = screen.getByTestId('review-actor-item')
+    const relevance = within(item).getByTestId('claim-group-relevance')
+    expect(relevance).toHaveTextContent('relevance')
+    expect(relevance).toHaveTextContent('central to AI compute')
+
+    const tier = within(item).getByTestId('claim-group-tier')
+    expect(tier).toHaveTextContent('a leading-edge foundry')
+    expect(within(tier).queryByTestId('unsourced-flag')).toBeNull()
+  })
+
+  it('flags an asserted tier with no citation as unsourced', () => {
+    const proposed = actor('a', 'Proposed Co', 'proposed', {
+      tier: 'foundry',
+      citations: [citation('relevance', 'central to AI compute')],
+    })
+
+    render(<ReviewQueue actors={[proposed]} flows={[]} onReview={vi.fn()} />)
+
+    const tier = within(screen.getByTestId('review-actor-item')).getByTestId('claim-group-tier')
+    expect(within(tier).getByTestId('unsourced-flag')).toBeInTheDocument()
+  })
+
+  it('flags a flow substitutability with no citation as unsourced', () => {
+    const actors = [actor('a', 'A', 'accepted'), actor('b', 'B', 'accepted')]
+    const proposed = flow('f', 'a', 'b', 'proposed', {
+      citations: [citation('dependency', 'A relies on B')],
+    })
+
+    render(<ReviewQueue actors={actors} flows={[proposed]} onReview={vi.fn()} />)
+
+    const item = screen.getByTestId('review-flow-item')
+    expect(within(item).getByTestId('claim-group-dependency')).toHaveTextContent('A relies on B')
+    const substitutability = within(item).getByTestId('claim-group-substitutability')
+    expect(within(substitutability).getByTestId('unsourced-flag')).toBeInTheDocument()
   })
 })
