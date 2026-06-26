@@ -41,6 +41,47 @@ export function runStructureRepositoryContract(
       expect(actor.createdAt).toBeInstanceOf(Date)
     })
 
+    it('round-trips per-claim citations attached to an actor', async () => {
+      const { repository, themeId } = await createContext()
+
+      const citations = [
+        {
+          claim: 'relevance' as const,
+          url: 'https://example.com/tsmc',
+          title: 'TSMC dominates leading-edge foundry',
+          quotedText: 'TSMC produces over 90% of the world’s most advanced chips.',
+        },
+        {
+          claim: 'tier' as const,
+          url: 'https://example.com/tier',
+          title: 'Foundry tier',
+          quotedText: 'TSMC is the leading pure-play foundry.',
+        },
+      ]
+
+      const actor = await repository.addActor({
+        themeId,
+        name: 'TSMC',
+        kind: 'point',
+        actorKey: 'TSM',
+        citations,
+      })
+
+      expect(actor.citations).toEqual(citations)
+      const [reloaded] = await repository.listActors(themeId)
+      expect(reloaded.citations).toEqual(citations)
+    })
+
+    it('defaults an actor with no supplied citations to an empty list', async () => {
+      const { repository, themeId } = await createContext()
+
+      const actor = await repository.addActor({ themeId, name: 'Taiwan', kind: 'place', actorKey: 'TW' })
+
+      expect(actor.citations).toEqual([])
+      const [reloaded] = await repository.listActors(themeId)
+      expect(reloaded.citations).toEqual([])
+    })
+
     it('defaults optional tier and location to null', async () => {
       const { repository, themeId } = await createContext()
 
@@ -73,6 +114,48 @@ export function runStructureRepositoryContract(
       expect(flow.substitutability).toBe(0.1)
       expect(flow.fromActorId).toBe(from.id)
       expect(flow.toActorId).toBe(to.id)
+    })
+
+    it('round-trips per-claim citations attached to a flow', async () => {
+      const { repository, themeId } = await createContext()
+      const from = await repository.addActor({ themeId, name: 'Apple', kind: 'point', actorKey: 'AAPL' })
+      const to = await repository.addActor({ themeId, name: 'TSMC', kind: 'point', actorKey: 'TSM' })
+
+      const citations = [
+        {
+          claim: 'dependency' as const,
+          url: 'https://example.com/apple-tsmc',
+          title: 'Apple relies on TSMC for its chips',
+          quotedText: 'Apple sources its A-series and M-series silicon exclusively from TSMC.',
+        },
+      ]
+
+      const flow = await repository.addFlow({
+        themeId,
+        fromActorId: from.id,
+        toActorId: to.id,
+        substitutability: 0,
+        citations,
+      })
+
+      expect(flow.citations).toEqual(citations)
+      const [reloaded] = await repository.listFlows(themeId)
+      expect(reloaded.citations).toEqual(citations)
+    })
+
+    it('defaults a flow with no supplied citations to an empty list', async () => {
+      const { repository, themeId } = await createContext()
+      const from = await repository.addActor({ themeId, name: 'Apple', kind: 'point', actorKey: 'AAPL' })
+      const to = await repository.addActor({ themeId, name: 'TSMC', kind: 'point', actorKey: 'TSM' })
+
+      const flow = await repository.addFlow({
+        themeId,
+        fromActorId: from.id,
+        toActorId: to.id,
+        substitutability: 0.5,
+      })
+
+      expect(flow.citations).toEqual([])
     })
 
     it('scopes listed actors and flows to their theme', async () => {

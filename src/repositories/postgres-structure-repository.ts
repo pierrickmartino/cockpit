@@ -20,6 +20,7 @@ export class PostgresStructureRepository implements StructureRepository {
         actorKey: input.actorKey,
         tier: input.tier ?? null,
         location: input.location ?? null,
+        citations: input.citations ?? [],
       })
       .returning()
     return toActor(row)
@@ -33,6 +34,7 @@ export class PostgresStructureRepository implements StructureRepository {
         fromActorId: input.fromActorId,
         toActorId: input.toActorId,
         substitutability: input.substitutability,
+        citations: input.citations ?? [],
       })
       .returning()
     return toFlow(row)
@@ -89,6 +91,7 @@ function toActor(row: ActorRow): Actor {
     tier: row.tier,
     location: row.location,
     status: row.status as ReviewStatus,
+    citations: row.citations,
     createdAt: row.createdAt,
   }
 }
@@ -101,6 +104,7 @@ function toFlow(row: FlowRow): Flow {
     toActorId: row.toActorId,
     substitutability: row.substitutability,
     status: row.status as ReviewStatus,
+    citations: row.citations,
     createdAt: row.createdAt,
   }
 }

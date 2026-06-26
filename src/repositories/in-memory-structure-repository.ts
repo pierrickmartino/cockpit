@@ -23,10 +23,11 @@ export class InMemoryStructureRepository implements StructureRepository {
       tier: input.tier ?? null,
       location: input.location ?? null,
       status: 'proposed',
+      citations: input.citations ?? [],
       createdAt: new Date(),
     }
-    this.actors.push({ ...actor })
-    return actor
+    this.actors.push(clone(actor))
+    return clone(actor)
   }
 
   async addFlow(input: NewFlow): Promise<Flow> {
@@ -37,18 +38,19 @@ export class InMemoryStructureRepository implements StructureRepository {
       toActorId: input.toActorId,
       substitutability: input.substitutability,
       status: 'proposed',
+      citations: input.citations ?? [],
       createdAt: new Date(),
     }
-    this.flows.push({ ...flow })
-    return flow
+    this.flows.push(clone(flow))
+    return clone(flow)
   }
 
   async listActors(themeId: string): Promise<Actor[]> {
-    return this.actors.filter((actor) => actor.themeId === themeId).map((actor) => ({ ...actor }))
+    return this.actors.filter((actor) => actor.themeId === themeId).map(clone)
   }
 
   async listFlows(themeId: string): Promise<Flow[]> {
-    return this.flows.filter((flow) => flow.themeId === themeId).map((flow) => ({ ...flow }))
+    return this.flows.filter((flow) => flow.themeId === themeId).map(clone)
   }
 
   async setActorStatus(
@@ -61,7 +63,7 @@ export class InMemoryStructureRepository implements StructureRepository {
       return null
     }
     actor.status = status
-    return { ...actor }
+    return clone(actor)
   }
 
   async setFlowStatus(themeId: string, flowId: string, status: ReviewStatus): Promise<Flow | null> {
@@ -70,6 +72,11 @@ export class InMemoryStructureRepository implements StructureRepository {
       return null
     }
     flow.status = status
-    return { ...flow }
+    return clone(flow)
   }
+}
+
+/** Deep copy so callers can never mutate the store's nested values (e.g. citations). */
+function clone<T>(value: T): T {
+  return structuredClone(value)
 }

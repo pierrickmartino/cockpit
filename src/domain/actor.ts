@@ -5,6 +5,7 @@
  * themes only by `actorKey` (ADR-0005); the graphs themselves stay separate.
  */
 
+import type { Citation } from '@/domain/citation'
 import type { ReviewStatus } from '@/domain/review'
 
 /** How an Actor anchors on the map: an area (choropleth) vs a pin (CONTEXT.md). */
@@ -25,6 +26,8 @@ export interface Actor {
   location: string | null
   /** Accept-gate status; an Actor enters `proposed` and is reviewed (ADR-0004). */
   status: ReviewStatus
+  /** Per-claim citations grounding this actor; empty when nothing is sourced yet. */
+  citations: Citation[]
   createdAt: Date
 }
 
@@ -36,4 +39,6 @@ export interface NewActor {
   actorKey: string
   tier?: string | null
   location?: string | null
+  /** Per-claim citations to attach; defaults to an empty list when omitted. */
+  citations?: Citation[]
 }
