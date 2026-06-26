@@ -7,6 +7,7 @@ import type { Actor, ActorKind } from '@/domain/actor'
 import type { Flow } from '@/domain/flow'
 import type { PublishedSnapshot } from '@/domain/published-snapshot'
 import type { WorkingStructure } from '@/domain/structure'
+import { ConversationPanel } from '@/app/admin/ConversationPanel'
 import { ReviewQueue } from '@/app/admin/ReviewQueue'
 import { StructurePreview } from '@/app/admin/StructurePreview'
 
@@ -133,6 +134,12 @@ export function StructureWorkbench({ themeId, adminToken }: StructureWorkbenchPr
   return (
     <section data-testid="structure-workbench">
       <h2>Working structure</h2>
+
+      <ConversationPanel
+        themeId={themeId}
+        authHeaders={authHeaders}
+        onProposalsChanged={loadStructure}
+      />
 
       <ActorForm onSubmit={submitActor} />
       <FlowForm actors={actors} onSubmit={submitFlow} />
